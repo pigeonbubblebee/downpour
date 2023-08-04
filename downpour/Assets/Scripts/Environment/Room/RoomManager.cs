@@ -4,8 +4,11 @@ using UnityEngine;
 
 namespace Downpour
 {
-    public class RoomManager : SingletonPersistent<RoomManager>
+    public class RoomManager : Singleton<RoomManager>
     {
-        
+        [field: SerializeField] public int RoomNumber { get; private set; }
+        [field: SerializeField] public string AreaName { get; private set; }
+
+        // TODO: add room serialization
     }
 }
