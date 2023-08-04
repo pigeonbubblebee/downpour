@@ -8,12 +8,11 @@ namespace Downpour.Entity.Player
     [CreateAssetMenu(fileName = "PlayerData", menuName = "Scriptables/Entity/Player Data")]
     public class PlayerData : ScriptableObject
     {
+        #if UNITY_EDITOR
+        public bool DrawGizmos;
+        #endif
         [Serializable]
         public class ColliderBounds {
-            #if UNITY_EDITOR
-            public bool drawGizmos;
-            #endif
-
             public Rect bounds;
             public Rect feetRect;
             public Rect handRect;

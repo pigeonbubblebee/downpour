@@ -6,24 +6,29 @@ namespace Downpour.Entity.Player
 {
     [RequireComponent(typeof(PlayerMovementController))]
     [RequireComponent(typeof(PlayerStateMachine))]
-    public class Player : MonoBehaviour
+    [RequireComponent(typeof(PlayerInteractableController))]
+    public class Player : Singleton<Player>
     {
-        #if UNITY_EDITOR
-        [SerializeField] private bool _drawGizmos;
-        #endif
 
         [field: SerializeField] public PlayerData PlayerData { get; private set; }
         public PlayerMovementController PlayerMovementController { get; private set; }
         public PlayerStateMachine PlayerStateMachine { get; private set; }
+        public PlayerInteractableController PlayerInteractableController { get; private set; }
 
-        private void Awake() {
+        protected override void Awake() {
+            base.Awake();
             PlayerMovementController = GetComponent<PlayerMovementController>();
             PlayerStateMachine = GetComponent<PlayerStateMachine>();
+            PlayerInteractableController = GetComponent<PlayerInteractableController>();
         }
 
+        // Handles gizmos rendering in editor, if enabled
         #if UNITY_EDITOR
         private void OnDrawGizmos() {
-            if(!PlayerData || !_drawGizmos)
+            if(!PlayerData)
+                return;
+
+            if(!PlayerData.DrawGizmos)
                 return;
             
             Transform t = transform;
@@ -35,8 +40,6 @@ namespace Downpour.Entity.Player
             DrawColliderData(PlayerData.StandColliderBounds);
             
             void DrawColliderData(PlayerData.ColliderBounds colliderBounds) {
-                if (!colliderBounds.drawGizmos)
-                    return;
 
                 drawer.SetColor(GizmosColor.Player.colliderData)
                     .DrawWireSquare(position + (colliderBounds.bounds.min * scale), colliderBounds.bounds.size)

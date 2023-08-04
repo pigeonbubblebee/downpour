@@ -31,11 +31,11 @@ namespace Downpour.Entity.Player {
         public float rbPositionX { get { return _rb.position.x; } }
         public float rbPositionY { get { return _rb.position.y; } }
 
-        [field: SerializeField] public float CoyoteCounter { get; private set; }
-        [field: SerializeField] public float JumpBufferCounter { get; private set; }
-        [field: SerializeField] public bool DesiredJump { get; private set; }
-        [field: SerializeField] public bool IsJumpReset { get; private set; }
-        [field: SerializeField] public bool UsedDoubleJump { get; private set; }
+        public float CoyoteCounter { get; private set; }
+        public float JumpBufferCounter { get; private set; }
+        public bool DesiredJump { get; private set; }
+        public bool IsJumpReset { get; private set; }
+        public bool UsedDoubleJump { get; private set; }
 
         private bool _grounded;
         public bool Grounded { get { return _checkGroundedRequest(); } }
@@ -131,9 +131,11 @@ namespace Downpour.Entity.Player {
                 if(y == 0) {
                     HeadDirection = x > 0 ? Direction.RIGHT : Direction.LEFT;
                 }
-            }
 
-            MovingDirection = startingMovement ? FacingDirection : 0;
+                MovingDirection = startingMovement ? FacingDirection : 0;
+            } else {
+                MovingDirection = 0;
+            }
 
             if(y != 0) {
                 HeadDirection = y > 0 ? Direction.UP : Direction.DOWN;

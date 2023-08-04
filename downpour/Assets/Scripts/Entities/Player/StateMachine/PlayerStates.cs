@@ -48,6 +48,9 @@ namespace Downpour.Entity.Player
         public override void Enter(State previousState) {
             // TODO: Reset hitbox, change to idle animation.
             _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
+            _acceleration = 0f;
+            _desiredVelocity = new Vector2(0f, 0f);
+            _velocity = new Vector2(0f, 0f);
         }
 
         public override void Update() {

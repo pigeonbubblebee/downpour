@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - PlayerCameraZoneChanger
+  - Interactable
   layers:
   - Default
   - TransparentFX
@@ -14,7 +16,7 @@ TagManager:
   - Ground
   - Enemy
   - Player
-  - 
+  - CameraZone
   - 
   - 
   - 
@@ -40,4 +42,37 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: background
+    uniqueID: 2059122305
+    locked: 0
+  - name: background2
+    uniqueID: 3533650791
+    locked: 0
+  - name: background3
+    uniqueID: 957700417
+    locked: 0
+  - name: background4
+    uniqueID: 2443357843
+    locked: 0
+  - name: background5
+    uniqueID: 1209469089
+    locked: 0
+  - name: background6
+    uniqueID: 8099823
+    locked: 0
+  - name: midground
+    uniqueID: 1557994171
+    locked: 0
+  - name: player
+    uniqueID: 3311017471
+    locked: 0
+  - name: foreground1
+    uniqueID: 319482573
+    locked: 0
+  - name: foreground2
+    uniqueID: 1776735775
+    locked: 0
+  - name: front
+    uniqueID: 502939179
     locked: 0
