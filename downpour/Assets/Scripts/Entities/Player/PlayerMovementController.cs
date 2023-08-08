@@ -20,9 +20,10 @@ namespace Downpour.Entity.Player {
         }
 
         public Direction HeadDirection { get; private set; }
-        public int FacingDirection { get; private set; }
+        [field: SerializeField] public int FacingDirection { get; private set; }
         public int MovingDirection { get; private set; }
-        private bool _spriteFacingRight = true;
+        [SerializeField] private bool _spriteFacingRight = true;
+        public bool SpriteFacingRight { get { return _spriteFacingRight; } }
 
         private Rigidbody2D _rb;
         public float rbVelocityX { get { return _rb.velocity.x; } }
@@ -88,7 +89,7 @@ namespace Downpour.Entity.Player {
 
         private void _handleJumpData() {
             // Check if grounded to handle coyote time. If not, coyote time ticks down.
-            if(Grounded && rbVelocityY == 0) {
+            if(Grounded) {
                 CoyoteCounter = _playerData.CurrentPlayerStats.CoyoteTime;
                 UsedDoubleJump = false;
             } else {
@@ -160,7 +161,7 @@ namespace Downpour.Entity.Player {
             _spriteFacingRight=!_spriteFacingRight;
             FacingDirection *= -1;
             Vector3 scale = transform.localScale;
-            scale.x *= -1;
+            // scale.x *= -1;
             transform.localScale = scale;
         }
 

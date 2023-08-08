@@ -17,9 +17,9 @@ MonoBehaviour:
     bounds:
       serializedVersion: 2
       x: 0
-      y: 0
+      y: -0.05
       width: 0.63
-      height: 1.812
+      height: 1.8125
     feetRect:
       serializedVersion: 2
       x: 0

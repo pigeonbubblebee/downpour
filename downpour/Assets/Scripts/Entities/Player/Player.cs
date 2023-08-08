@@ -14,12 +14,14 @@ namespace Downpour.Entity.Player
         public PlayerMovementController PlayerMovementController { get; private set; }
         public PlayerStateMachine PlayerStateMachine { get; private set; }
         public PlayerInteractableController PlayerInteractableController { get; private set; }
+        public PlayerAnimationController PlayerAnimationController { get; private set; }
 
         protected override void Awake() {
             base.Awake();
             PlayerMovementController = GetComponent<PlayerMovementController>();
             PlayerStateMachine = GetComponent<PlayerStateMachine>();
             PlayerInteractableController = GetComponent<PlayerInteractableController>();
+            PlayerAnimationController = GetComponent<PlayerAnimationController>();
         }
 
         // Handles gizmos rendering in editor, if enabled

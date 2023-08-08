@@ -11,6 +11,7 @@ namespace Downpour.Entity.Player
 
         protected PlayerData _playerData => _player.PlayerData;
         protected PlayerMovementController _playerMovementController => _player.PlayerMovementController;
+        protected PlayerAnimationController _playerAnimationController => _player.PlayerAnimationController;
         
         public PlayerState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { }
     }
@@ -20,6 +21,8 @@ namespace Downpour.Entity.Player
         public PlayerIdleState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { }
 
         public override void Enter(State previousState) {
+            _playerAnimationController.PlayAnimation(_playerAnimationController.IdleAnimationClip);
+
             _playerMovementController.setVelocity(0, _playerMovementController.rbVelocityY);
             _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
             // TODO: change to idle animation.
@@ -116,7 +119,7 @@ namespace Downpour.Entity.Player
 
         private void _handleJump() {
             // Debug.Log(_playerMovementController.Grounded + " " + _playerMovementController.rbVelocityY);
-            if(_playerMovementController.Grounded && _playerMovementController.rbVelocityY == 0) {
+            if(_playerMovementController.Grounded) {
                 _isJumping = false;
             }
 
