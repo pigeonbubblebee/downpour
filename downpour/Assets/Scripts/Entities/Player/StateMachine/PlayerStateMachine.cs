@@ -27,16 +27,20 @@ namespace Downpour.Entity.Player
         private void Start() {
             EnterDefaultState();
         }
+
+        public void PlayStateAnimation() {
+            (CurrentState as PlayerState).PlayStateAnimation();
+        }
         
         public bool EnterDefaultState() {
             // Check if current state can't enter default, like falling, wallclimbing, dashing, ect.
-
             ChangeState(Player.PlayerMovementController.MovingDirection == 0 ? IdleState : RunState);
             return true;
         }
 
         public bool EnterJumpState() {
-            if(!Player.PlayerMovementController.DesiredJump) { // Check for grounded
+            if(!((Player.PlayerMovementController.DesiredJump) && (Player.PlayerMovementController.JumpBufferCounter > 0) && 
+                ( (Player.PlayerMovementController.CoyoteCounter > 0) || (!Player.PlayerMovementController.UsedDoubleJump && Player.PlayerData.CurrentPlayerStats.HasDoubleJump && (CurrentState is PlayerFallState)) ))) { // Check for grounded
                 return false;
             }
 
@@ -45,6 +49,9 @@ namespace Downpour.Entity.Player
         }
 
         public bool EnterFallState() {
+            if(Player.PlayerMovementController.DesiredJump) {
+                return false;
+            }
             if(Player.PlayerMovementController.Grounded || Player.PlayerMovementController.rbVelocityY >= 0) { // Check for grounded
                 return false;
             }

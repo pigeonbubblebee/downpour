@@ -14,6 +14,14 @@ namespace Downpour.Entity.Player
         protected PlayerAnimationController _playerAnimationController => _player.PlayerAnimationController;
         
         public PlayerState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { }
+
+        public override void Enter(State previousState) {
+            PlayStateAnimation();
+        }
+
+        public virtual void PlayStateAnimation() {
+
+        }
     }
 
     public class PlayerIdleState : PlayerState
@@ -21,11 +29,14 @@ namespace Downpour.Entity.Player
         public PlayerIdleState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { }
 
         public override void Enter(State previousState) {
-            _playerAnimationController.PlayAnimation(_playerAnimationController.IdleAnimationClip);
-
+            base.Enter(previousState);
             _playerMovementController.setVelocity(0, _playerMovementController.rbVelocityY);
             _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
             // TODO: change to idle animation.
+        }
+
+        public override void PlayStateAnimation() {
+            _playerAnimationController.PlayAnimation(_playerAnimationController.IdleAnimationClip);
         }
 
         public override void Update() {
@@ -49,11 +60,18 @@ namespace Downpour.Entity.Player
         private float _maxSpeedChange, _acceleration;
 
         public override void Enter(State previousState) {
+            base.Enter(previousState);
+            _playerAnimationController.PlayAnimation(_playerAnimationController.RunAnimationClip);
+
             // TODO: Reset hitbox, change to idle animation.
             _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
             _acceleration = 0f;
             _desiredVelocity = new Vector2(0f, 0f);
             _velocity = new Vector2(0f, 0f);
+        }
+
+        public override void PlayStateAnimation() {
+            _playerAnimationController.PlayAnimation(_playerAnimationController.RunAnimationClip);
         }
 
         public override void Update() {
@@ -89,8 +107,13 @@ namespace Downpour.Entity.Player
         private bool _isJumping;
 
         public override void Enter(State previousState) {
+            base.Enter(previousState);
             // TODO: Reset hitbox, change to idle animation.
             _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
+        }
+
+        public override void PlayStateAnimation() {
+            _playerAnimationController.PlayAnimation(_playerAnimationController.RunAnimationClip);
         }
 
         public override void Update() {
@@ -107,6 +130,12 @@ namespace Downpour.Entity.Player
             if(_psm.EnterFallState()) {
                 return;
             }
+
+            // if(_playerMovementController.Grounded) {
+            //     if(_psm.EnterDefaultState()) {
+            //         return;
+            //     }
+            // }
         }
 
         private void _handleHorizontalMovement() {
@@ -118,7 +147,7 @@ namespace Downpour.Entity.Player
         }
 
         private void _handleJump() {
-            // Debug.Log(_playerMovementController.Grounded + " " + _playerMovementController.rbVelocityY);
+            // Debug.Log(_playerMovementController.DesiredJump + " " + _playerMovementController.JumpBufferCounter);
             if(_playerMovementController.Grounded) {
                 _isJumping = false;
             }
@@ -170,9 +199,14 @@ namespace Downpour.Entity.Player
         private float _maxSpeedChange, _acceleration;
 
         public override void Enter(State previousState) {
+            base.Enter(previousState);
             // TODO: Reset hitbox, change to idle animation.
             _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
             _fallStartPositionY = _playerMovementController.rbPositionY;
+        }
+
+        public override void PlayStateAnimation() {
+            _playerAnimationController.PlayAnimation(_playerAnimationController.RunAnimationClip);
         }
 
         public override void Update() {
@@ -182,6 +216,7 @@ namespace Downpour.Entity.Player
                 }
             }
             // check sliding wall
+            
             if(_playerMovementController.Grounded) {
                 _psm.EnterDefaultState();
             }

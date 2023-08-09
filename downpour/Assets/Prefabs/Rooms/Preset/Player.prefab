@@ -158,6 +158,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bbcd520e1a80344883b3e20bc2d4255, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <FacingDirection>k__BackingField: 0
+  _spriteFacingRight: 1
 --- !u!50 &4843140819076506085
 Rigidbody2D:
   serializedVersion: 4
@@ -228,7 +230,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.63, y: 1.6}
+  m_Size: {x: 0.63, y: 1.7}
   m_EdgeRadius: 0.025
 --- !u!114 &403957929166302478
 MonoBehaviour:
@@ -284,6 +286,9 @@ MonoBehaviour:
   <IdleAnimationClip>k__BackingField:
     <RightClip>k__BackingField: IdleRight
     <LeftClip>k__BackingField: IdleLeft
+  <RunAnimationClip>k__BackingField:
+    <RightClip>k__BackingField: RunRight
+    <LeftClip>k__BackingField: RunLeft
 --- !u!1 &4013402098530447248
 GameObject:
   m_ObjectHideFlags: 0

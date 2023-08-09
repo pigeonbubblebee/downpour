@@ -10,6 +10,7 @@ namespace Downpour.Entity.Player
         [field: SerializeField] public Animator PlayerAnimator { get; private set; }
 
         [field: SerializeField] public AsymmetricalAnimationClip IdleAnimationClip { get; private set; }
+        [field: SerializeField] public AsymmetricalAnimationClip RunAnimationClip { get; private set; }
 
         public string CurrentAnimation { get; private set; }
 
@@ -23,7 +24,6 @@ namespace Downpour.Entity.Player
             [field: SerializeField] public string LeftClip { get; private set; }
 
             public void PlayAnimation(Animator animator, bool facingRight) {
-                Debug.Log(facingRight ? RightClip : LeftClip);
                 animator.Play(facingRight ? RightClip : LeftClip);
             }
         }

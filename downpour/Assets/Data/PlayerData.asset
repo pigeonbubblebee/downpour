@@ -36,6 +36,6 @@ MonoBehaviour:
     <MoveSpeed>k__BackingField: 5
     <MaxAcceleration>k__BackingField: 100
     <JumpHeight>k__BackingField: 4
-    <CoyoteTime>k__BackingField: 0.2
+    <CoyoteTime>k__BackingField: 0.3
     <JumpBufferTime>k__BackingField: 0.3
     HasDoubleJump: 0
