@@ -17,9 +17,9 @@ MonoBehaviour:
     bounds:
       serializedVersion: 2
       x: 0
-      y: -0.05
+      y: -0.1
       width: 0.63
-      height: 1.8125
+      height: 1.6
     feetRect:
       serializedVersion: 2
       x: 0
@@ -29,13 +29,14 @@ MonoBehaviour:
     handRect:
       serializedVersion: 2
       x: 0.266
-      y: 0
+      y: -0.1
       width: 0.1
-      height: 1.8125
+      height: 1.6
   <BasePlayerStats>k__BackingField:
     <MoveSpeed>k__BackingField: 5
     <MaxAcceleration>k__BackingField: 100
     <JumpHeight>k__BackingField: 4
+    <MaxFallSpeed>k__BackingField: 40
     <CoyoteTime>k__BackingField: 0.3
     <JumpBufferTime>k__BackingField: 0.3
     HasDoubleJump: 0

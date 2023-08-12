@@ -113,7 +113,7 @@ namespace Downpour.Entity.Player
         }
 
         public override void PlayStateAnimation() {
-            _playerAnimationController.PlayAnimation(_playerAnimationController.RunAnimationClip);
+            _playerAnimationController.PlayAnimation(_playerAnimationController.JumpAnimationClip);
         }
 
         public override void Update() {
@@ -157,7 +157,7 @@ namespace Downpour.Entity.Player
                     _jumpAction();
                 }
             } else {
-                _velocity = new Vector2(_playerMovementController.rbVelocityX, 0.15f);
+                _velocity = new Vector2(_velocity.x, 0.075f);
                 _psm.EnterDefaultState();
             }
         }
@@ -206,7 +206,7 @@ namespace Downpour.Entity.Player
         }
 
         public override void PlayStateAnimation() {
-            _playerAnimationController.PlayAnimation(_playerAnimationController.RunAnimationClip);
+            _playerAnimationController.PlayAnimation(_playerAnimationController.FallAnimationClip);
         }
 
         public override void Update() {
@@ -216,6 +216,9 @@ namespace Downpour.Entity.Player
                 }
             }
             // check sliding wall
+
+            // Cap Max Fall Speed
+            _playerMovementController.setVelocity(new Vector2(_playerMovementController.rbVelocityX, Mathf.Min(_playerMovementController.rbVelocityY, _playerData.CurrentPlayerStats.MaxFallSpeed)));
             
             if(_playerMovementController.Grounded) {
                 _psm.EnterDefaultState();

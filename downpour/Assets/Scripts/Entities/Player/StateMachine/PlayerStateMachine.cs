@@ -49,7 +49,8 @@ namespace Downpour.Entity.Player
         }
 
         public bool EnterFallState() {
-            if(Player.PlayerMovementController.DesiredJump) {
+             if(((Player.PlayerMovementController.DesiredJump) && (Player.PlayerMovementController.JumpBufferCounter > 0) && 
+                ( (Player.PlayerMovementController.CoyoteCounter > 0) || (!Player.PlayerMovementController.UsedDoubleJump && Player.PlayerData.CurrentPlayerStats.HasDoubleJump && (CurrentState is PlayerFallState)) ))) {
                 return false;
             }
             if(Player.PlayerMovementController.Grounded || Player.PlayerMovementController.rbVelocityY >= 0) { // Check for grounded

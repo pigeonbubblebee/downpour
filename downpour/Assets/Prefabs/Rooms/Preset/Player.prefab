@@ -289,6 +289,15 @@ MonoBehaviour:
   <RunAnimationClip>k__BackingField:
     <RightClip>k__BackingField: RunRight
     <LeftClip>k__BackingField: RunLeft
+  <JumpAnimationClip>k__BackingField:
+    <RightClip>k__BackingField: JumpRight
+    <LeftClip>k__BackingField: JumpLeft
+  <FallAnimationClip>k__BackingField:
+    <RightClip>k__BackingField: FallRight
+    <LeftClip>k__BackingField: FallLeft
+  <LandAnimationClip>k__BackingField:
+    <RightClip>k__BackingField: LandRight
+    <LeftClip>k__BackingField: LandLeft
 --- !u!1 &4013402098530447248
 GameObject:
   m_ObjectHideFlags: 0
