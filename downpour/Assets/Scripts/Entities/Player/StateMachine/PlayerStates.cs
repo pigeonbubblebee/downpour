@@ -32,7 +32,6 @@ namespace Downpour.Entity.Player
             base.Enter(previousState);
             _playerMovementController.setVelocity(0, _playerMovementController.rbVelocityY);
             _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
-            // TODO: change to idle animation.
         }
 
         public override void PlayStateAnimation() {
@@ -40,7 +39,6 @@ namespace Downpour.Entity.Player
         }
 
         public override void Update() {
-            // TODO: Check for other states
             if(_psm.EnterJumpState()
             || _psm.EnterFallState()) {
                 return;
@@ -54,20 +52,16 @@ namespace Downpour.Entity.Player
 
     public class PlayerRunState : PlayerState
     {
-        public PlayerRunState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { }
+        public PlayerRunState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { 
+            RunStateRunLogicHandler = new RunLogicHandler(playerStateMachine);
+        }
 
-        private Vector2 _direction, _desiredVelocity, _velocity;
-        private float _maxSpeedChange, _acceleration;
+        public RunLogicHandler RunStateRunLogicHandler { get; private set; }
 
         public override void Enter(State previousState) {
             base.Enter(previousState);
-            _playerAnimationController.PlayAnimation(_playerAnimationController.RunAnimationClip);
-
-            // TODO: Reset hitbox, change to idle animation.
+            
             _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
-            _acceleration = 0f;
-            _desiredVelocity = new Vector2(0f, 0f);
-            _velocity = new Vector2(0f, 0f);
         }
 
         public override void PlayStateAnimation() {
@@ -79,36 +73,51 @@ namespace Downpour.Entity.Player
             || _psm.EnterFallState()) {
                 return;
             }
+
             if(_playerMovementController.MovingDirection == 0) {
                 _psm.ChangeState(_psm.IdleState);
             } else {
-                _direction.x = _playerMovementController.MovingDirection;
-                _desiredVelocity = new Vector2(_direction.x * _playerData.CurrentPlayerStats.MoveSpeed, 0f);
+                RunStateRunLogicHandler.SetDesiredVelocity(_playerMovementController, _playerData);
             }
         }
 
         public override void FixedUpdate() {
-            _velocity = _playerMovementController.rbVelocity;
-            _acceleration = _playerData.CurrentPlayerStats.MaxAcceleration;
+            _playerMovementController.setVelocity(RunStateRunLogicHandler.GetVelocityX(), _playerMovementController.rbVelocityY);
+        }
 
-            _maxSpeedChange = _acceleration * Time.deltaTime;
-            _velocity.x = Mathf.MoveTowards(_velocity.x, _desiredVelocity.x, _maxSpeedChange);
+        public class RunLogicHandler {
+            private Vector2 _direction, _desiredVelocity;
+            private PlayerStateMachine _playerStateMachine;
 
-            _playerMovementController.setVelocity(_velocity);
+            public RunLogicHandler(PlayerStateMachine playerStateMachine) {
+                _playerStateMachine = playerStateMachine;
+            }
+
+            public void SetDesiredVelocity(PlayerMovementController playerMovementController, PlayerData playerData) {
+                _direction.x = playerMovementController.MovingDirection;
+                _desiredVelocity = new Vector2(_direction.x * playerData.CurrentPlayerStats.MoveSpeed, 0f);
+            }
+
+            public float GetVelocityX() {
+                return _desiredVelocity.x;
+            }
         }
     }
 
     public class PlayerJumpState : PlayerState
     {
-        public PlayerJumpState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { }
+        public PlayerJumpState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { 
+            JumpStateJumpLogicHandler = new JumpLogicHandler(playerStateMachine);
+        }
 
-        private Vector2 _direction, _desiredHorzVelocity, _velocity;
-        private float _maxSpeedChange, _acceleration, _jumpSpeed;
-        private bool _isJumping;
+        private Vector2 _velocity;
+
+        public JumpLogicHandler JumpStateJumpLogicHandler { get; private set; }
 
         public override void Enter(State previousState) {
             base.Enter(previousState);
-            // TODO: Reset hitbox, change to idle animation.
+            JumpStateJumpLogicHandler.HandleNewStateChange(previousState, this);
+            
             _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
         }
 
@@ -117,74 +126,76 @@ namespace Downpour.Entity.Player
         }
 
         public override void Update() {
-            _direction.x = _playerMovementController.MovingDirection;
-            _desiredHorzVelocity = new Vector2(_direction.x * _playerData.CurrentPlayerStats.MoveSpeed, 0f);
+            _psm.RunState.RunStateRunLogicHandler.SetDesiredVelocity(_playerMovementController, _playerData);
         }
 
         public override void FixedUpdate() {
-            _handleHorizontalMovement();
-            _handleJump();
+            _velocity = _playerMovementController.rbVelocity;
+            _velocity.x = _psm.RunState.RunStateRunLogicHandler.GetVelocityX();
+
+            if(JumpStateJumpLogicHandler.HandleJump(_playerMovementController)) {
+                _velocity.y = JumpStateJumpLogicHandler.JumpAction(_playerMovementController, _playerData);
+            } else {
+                _velocity = new Vector2(_velocity.x, 0.075f);
+                _psm.EnterDefaultState();
+            }
 
             _playerMovementController.setVelocity(_velocity);
 
             if(_psm.EnterFallState()) {
                 return;
             }
-
-            // if(_playerMovementController.Grounded) {
-            //     if(_psm.EnterDefaultState()) {
-            //         return;
-            //     }
-            // }
         }
 
-        private void _handleHorizontalMovement() {
-            _velocity = _playerMovementController.rbVelocity;
-            _acceleration = _playerData.CurrentPlayerStats.MaxAcceleration;
+        public class JumpLogicHandler {
+            private float _jumpSpeed;
+            private Vector2 _velocity;
 
-            _maxSpeedChange = _acceleration * Time.deltaTime;
-            _velocity.x = Mathf.MoveTowards(_velocity.x, _desiredHorzVelocity.x, _maxSpeedChange);
-        }
+            private State _previousState, _currentState;
 
-        private void _handleJump() {
-            // Debug.Log(_playerMovementController.DesiredJump + " " + _playerMovementController.JumpBufferCounter);
-            if(_playerMovementController.Grounded) {
-                _isJumping = false;
+            private PlayerStateMachine _playerStateMachine;
+
+            public JumpLogicHandler(PlayerStateMachine playerStateMachine) {
+                _playerStateMachine = playerStateMachine;
             }
 
-            if(_playerMovementController.DesiredJump) {
-                if(_playerMovementController.JumpBufferCounter > 0) {
-                    _jumpAction();
-                }
-            } else {
-                _velocity = new Vector2(_velocity.x, 0.075f);
-                _psm.EnterDefaultState();
+            public void HandleNewStateChange(State previousState, State currentState) {
+                _previousState = previousState;
+                _currentState = currentState;
             }
-        }
 
-        private void _jumpAction() {
-            if(_playerMovementController.CoyoteCounter > 0 
-            || (!_playerMovementController.UsedDoubleJump && _playerData.CurrentPlayerStats.HasDoubleJump && _isJumping)) {
-                if(_isJumping) {
-                    _playerMovementController.UseDoubleJump();
-                    Debug.Log("Double Jump");
+            public bool HandleJump(PlayerMovementController playerMovementController) {
+                return playerMovementController.DesiredJump;
+            }
+
+            public float JumpAction(PlayerMovementController playerMovementController, PlayerData playerData) {
+                if(!(playerMovementController.JumpBufferCounter > 0)) {
+                    return 0;
+                }
+                if(playerMovementController.CoyoteCounter > 0 
+                || (!playerMovementController.UsedDoubleJump && playerData.CurrentPlayerStats.HasDoubleJump && _previousState is PlayerFallState)) {
+                    if(_previousState is PlayerFallState) {
+                        playerMovementController.UseDoubleJump();
+                        Debug.Log("Double Jump");
+                    }
+
+                    playerMovementController.ResetCoyoteTime();
+                    playerMovementController.ResetJumpBuffer();
+
+                    _jumpSpeed = MathF.Sqrt(-2f * Physics2D.gravity.y * playerData.CurrentPlayerStats.JumpHeight);
+
+                    if(playerMovementController.rbVelocityY > 0f) {
+                        _jumpSpeed = Mathf.Max(_jumpSpeed - _velocity.y, 0f);
+                    }
+                    else if (_velocity.y < 0f)
+                    {
+                        _jumpSpeed += Mathf.Abs(playerMovementController.rbVelocityY);
+                    }
+
+                    return _jumpSpeed;
                 }
 
-                _playerMovementController.ResetCoyoteTime();
-                _playerMovementController.ResetJumpBuffer();
-
-                _jumpSpeed = MathF.Sqrt(-2f * Physics2D.gravity.y * _playerData.CurrentPlayerStats.JumpHeight);
-                _isJumping = true;
-
-                if(_playerMovementController.rbVelocityY > 0f) {
-                    _jumpSpeed = Mathf.Max(_jumpSpeed - _velocity.y, 0f);
-                }
-                else if (_velocity.y < 0f)
-                {
-                    _jumpSpeed += Mathf.Abs(_playerMovementController.rbVelocityY);
-                }
-
-                _velocity.y += _jumpSpeed;
+                return 0;
             }
         }
     }
@@ -224,8 +235,7 @@ namespace Downpour.Entity.Player
                 _psm.EnterDefaultState();
             }
 
-            _direction.x = _playerMovementController.MovingDirection;
-            _desiredVelocity = new Vector2(_direction.x * _playerData.CurrentPlayerStats.MoveSpeed, 0f);
+            _psm.RunState.RunStateRunLogicHandler.SetDesiredVelocity(_playerMovementController, _playerData);
         }
 
         public override void FixedUpdate() {
@@ -233,14 +243,7 @@ namespace Downpour.Entity.Player
         }
 
         private void _handleHorizontalMovement() {
-            _velocity = _playerMovementController.rbVelocity;
-
-            _acceleration = _playerData.CurrentPlayerStats.MaxAcceleration;
-
-            _maxSpeedChange = _acceleration * Time.deltaTime;
-            _velocity.x = Mathf.MoveTowards(_velocity.x, _desiredVelocity.x, _maxSpeedChange);
-
-            _playerMovementController.setVelocity(_velocity);
+            _playerMovementController.setVelocity(_psm.RunState.RunStateRunLogicHandler.GetVelocityX(), _playerMovementController.rbVelocityY);
         }
     }
 }

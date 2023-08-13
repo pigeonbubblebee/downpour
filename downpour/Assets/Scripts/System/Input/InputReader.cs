@@ -15,6 +15,7 @@ namespace Downpour.Input {
         // Events:
         public event Action<float, float, bool> MovementEvent;
         public event Action<bool> JumpEvent;
+        public event Action<bool> SlashEvent;
 
         // Initialization
         protected override void Awake() {
@@ -54,6 +55,11 @@ namespace Downpour.Input {
         // Handle Inputs:
         void InputActions.IGameplayActions.OnJump(InputAction.CallbackContext context) {
             JumpEvent?.Invoke(context.phase == InputActionPhase.Canceled ? false : true);
+        }
+
+        // Handle Inputs:
+        void InputActions.IGameplayActions.OnSlash(InputAction.CallbackContext context) {
+            SlashEvent?.Invoke(context.phase == InputActionPhase.Canceled ? false : true);
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Downpour.Entity.Player
         [Serializable]
         public struct PlayerStats {
             [field: SerializeField, Range(0f, 100f)] public float MoveSpeed { get; private set; }
-            [field: SerializeField, Range(0f, 100f)] public float MaxAcceleration { get; private set; }
+            // [field: SerializeField, Range(0f, 100f)] public float MaxAcceleration { get; private set; }
 
             [field: SerializeField, Range(0f, 10f)] public float JumpHeight { get; private set; }
             [field: SerializeField, Range(0f, 100f)] public float MaxFallSpeed { get; private set; }
