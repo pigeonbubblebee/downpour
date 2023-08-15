@@ -13,11 +13,26 @@ namespace Downpour.Entity.Player
         [field: SerializeField] public AsymmetricalAnimationClip RunAnimationClip { get; private set; }
         [field: SerializeField] public AsymmetricalAnimationClip JumpAnimationClip { get; private set; }
         [field: SerializeField] public AsymmetricalAnimationClip FallAnimationClip { get; private set; }
+        [field: SerializeField] public AsymmetricalAnimationClip SlashAnimationClip { get; private set; }
 
         public string CurrentAnimation { get; private set; }
 
         public void PlayAnimation(AsymmetricalAnimationClip animationClip) {
+            _resetAnimationSpeed(); // Reset Animation Speed
             animationClip.PlayAnimation(PlayerAnimator, _playerMovementController.SpriteFacingRight);
+        }
+
+        public void PlayAnimation(AsymmetricalAnimationClip animationClip, float speed) {
+            _setAnimationSpeed(speed); // Reset Animation Speed
+            animationClip.PlayAnimation(PlayerAnimator, _playerMovementController.SpriteFacingRight);
+        }
+
+        private void _resetAnimationSpeed() {
+            _setAnimationSpeed(1f);
+        }
+
+        private void _setAnimationSpeed(float speed) {
+            PlayerAnimator.speed = 1/speed;
         }
 
         [Serializable]

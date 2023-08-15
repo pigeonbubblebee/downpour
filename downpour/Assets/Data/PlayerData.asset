@@ -33,9 +33,15 @@ MonoBehaviour:
       width: 0.1
       height: 1.6
   <BasePlayerStats>k__BackingField:
+    <MaxHealth>k__BackingField: 0
+    <MaxSpirit>k__BackingField: 0
     <MoveSpeed>k__BackingField: 5
     <JumpHeight>k__BackingField: 4
     <MaxFallSpeed>k__BackingField: 40
     <CoyoteTime>k__BackingField: 0.3
     <JumpBufferTime>k__BackingField: 0.3
     HasDoubleJump: 0
+    <SlashDamage>k__BackingField: 4
+    <SlashSpeed>k__BackingField: 0.25
+    <SlashCooldown>k__BackingField: 1
+    <SlashRange>k__BackingField: 1

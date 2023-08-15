@@ -15,6 +15,8 @@ namespace Downpour.Entity.Player
         protected PlayerInteractableController _playerInteractableController => Player.PlayerInteractableController;
         protected PlayerAnimationController _playerAnimationController => Player.PlayerAnimationController;
         protected PlayerStateMachine _playerStateMachine => Player.PlayerStateMachine;
+        protected PlayerStatsController _playerStatsController => Player.PlayerStatsController;
+        protected PlayerCombatController _playerCombatController => Player.PlayerCombatController;
 
         protected virtual void Awake() {
             Player = GetComponent<Player>();

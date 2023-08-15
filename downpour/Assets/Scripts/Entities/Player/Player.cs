@@ -7,6 +7,9 @@ namespace Downpour.Entity.Player
     [RequireComponent(typeof(PlayerMovementController))]
     [RequireComponent(typeof(PlayerStateMachine))]
     [RequireComponent(typeof(PlayerInteractableController))]
+    [RequireComponent(typeof(PlayerAnimationController))]
+    [RequireComponent(typeof(PlayerStatsController))]
+    [RequireComponent(typeof(PlayerCombatController))]
     public class Player : Singleton<Player>
     {
 
@@ -15,6 +18,8 @@ namespace Downpour.Entity.Player
         public PlayerStateMachine PlayerStateMachine { get; private set; }
         public PlayerInteractableController PlayerInteractableController { get; private set; }
         public PlayerAnimationController PlayerAnimationController { get; private set; }
+        public PlayerStatsController PlayerStatsController { get; private set; }
+        public PlayerCombatController PlayerCombatController { get; private set; }
 
         protected override void Awake() {
             base.Awake();
@@ -22,6 +27,8 @@ namespace Downpour.Entity.Player
             PlayerStateMachine = GetComponent<PlayerStateMachine>();
             PlayerInteractableController = GetComponent<PlayerInteractableController>();
             PlayerAnimationController = GetComponent<PlayerAnimationController>();
+            PlayerStatsController = GetComponent<PlayerStatsController>();
+            PlayerCombatController = GetComponent<PlayerCombatController>();
         }
 
         // Handles gizmos rendering in editor, if enabled

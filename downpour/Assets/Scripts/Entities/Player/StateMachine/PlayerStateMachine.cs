@@ -12,6 +12,7 @@ namespace Downpour.Entity.Player
         public PlayerRunState RunState { get; private set; }
         public PlayerJumpState JumpState { get; private set; }
         public PlayerFallState FallState { get; private set; }
+        public PlayerSlashState SlashState { get; private set; }
 
         public Player Player { get; private set; }
 
@@ -20,6 +21,7 @@ namespace Downpour.Entity.Player
             RunState = new PlayerRunState(this);
             JumpState = new PlayerJumpState(this);
             FallState = new PlayerFallState(this);
+            SlashState = new PlayerSlashState(this);
 
             Player = GetComponent<Player>();
         }
@@ -39,8 +41,10 @@ namespace Downpour.Entity.Player
         }
 
         public bool EnterJumpState() {
-            if(!((Player.PlayerMovementController.DesiredJump) && (Player.PlayerMovementController.JumpBufferCounter > 0) && 
-                ( (Player.PlayerMovementController.CoyoteCounter > 0) || (!Player.PlayerMovementController.UsedDoubleJump && Player.PlayerData.CurrentPlayerStats.HasDoubleJump && (CurrentState is PlayerFallState)) ))) { // Check for grounded
+            if(!Player.PlayerMovementController.DesiredJump) {
+                return false;
+            }
+            if(!JumpState.JumpStateJumpLogicHandler.CanJump(Player.PlayerMovementController, Player.PlayerStatsController)) {
                 return false;
             }
 
@@ -49,15 +53,20 @@ namespace Downpour.Entity.Player
         }
 
         public bool EnterFallState() {
-             if(((Player.PlayerMovementController.DesiredJump) && (Player.PlayerMovementController.JumpBufferCounter > 0) && 
-                ( (Player.PlayerMovementController.CoyoteCounter > 0) || (!Player.PlayerMovementController.UsedDoubleJump && Player.PlayerData.CurrentPlayerStats.HasDoubleJump && (CurrentState is PlayerFallState)) ))) {
-                return false;
-            }
-            if(Player.PlayerMovementController.Grounded || Player.PlayerMovementController.rbVelocityY >= 0) { // Check for grounded
+            if(Player.PlayerMovementController.Grounded || Player.PlayerMovementController.rbVelocityY >= 0) {
                 return false;
             }
 
             ChangeState(FallState);
+            return true;
+        }
+
+        public bool EnterSlashState() {
+            if(!Player.PlayerCombatController.DesiredSlash) {
+                return false;
+            }
+
+            ChangeState(SlashState);
             return true;
         }
     }

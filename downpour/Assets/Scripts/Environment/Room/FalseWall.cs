@@ -8,6 +8,7 @@ namespace Downpour
     {
         [field: SerializeField] private GameObject _falseWall;
         [field: SerializeField] private GameObject _falseArea;
+        
         private void OnTriggerEnter2D(Collider2D other) {
             if(other.CompareTag("Player")) {
                 _falseWall.SetActive(false);

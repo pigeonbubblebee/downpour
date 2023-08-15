@@ -43,7 +43,7 @@ namespace Downpour.Entity.Player {
 
         private PlayerData.ColliderBounds _colliderBoundsSource { get; set; }
 
-        public InputAction JumpAction => InputReader.Instance.InputActions.Gameplay.Jump;
+        // public InputAction JumpAction => InputReader.Instance.InputActions.Gameplay.Jump;
 
 
         // Initialization
@@ -90,7 +90,7 @@ namespace Downpour.Entity.Player {
         private void _handleJumpData() {
             // Check if grounded to handle coyote time. If not, coyote time ticks down.
             if(Grounded) {
-                CoyoteCounter = _playerData.CurrentPlayerStats.CoyoteTime;
+                CoyoteCounter = _playerStatsController.CurrentPlayerStats.CoyoteTime;
                 UsedDoubleJump = false;
             } else {
                 CoyoteCounter -= Time.deltaTime;
@@ -100,7 +100,7 @@ namespace Downpour.Entity.Player {
             if(DesiredJump && IsJumpReset) {
                 IsJumpReset = false;
                 // DesiredJump = false;
-                JumpBufferCounter = _playerData.CurrentPlayerStats.JumpBufferTime;
+                JumpBufferCounter = _playerStatsController.CurrentPlayerStats.JumpBufferTime;
             } else if(JumpBufferCounter > 0) {
                 JumpBufferCounter -= Time.deltaTime;
             } else if (!DesiredJump) {
@@ -164,7 +164,8 @@ namespace Downpour.Entity.Player {
             // scale.x *= -1;
             transform.localScale = scale;
 
-            _playerStateMachine.PlayStateAnimation();
+            if((_playerStateMachine.CurrentState as PlayerState).CanFlip)
+                _playerStateMachine.PlayStateAnimation();
         }
 
         // Colliders

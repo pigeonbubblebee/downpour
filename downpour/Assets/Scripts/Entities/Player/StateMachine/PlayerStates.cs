@@ -9,13 +9,16 @@ namespace Downpour.Entity.Player
         protected PlayerStateMachine _psm => (_sm as PlayerStateMachine);
         protected Player _player => _psm.Player;
 
-        protected PlayerData _playerData => _player.PlayerData;
+        protected PlayerStatsController _playerStatsController => _player.PlayerStatsController;
         protected PlayerMovementController _playerMovementController => _player.PlayerMovementController;
         protected PlayerAnimationController _playerAnimationController => _player.PlayerAnimationController;
         
         public PlayerState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { }
 
+        public bool CanFlip { get; protected set; }
+
         public override void Enter(State previousState) {
+            CanFlip = true;
             PlayStateAnimation();
         }
 
@@ -40,7 +43,8 @@ namespace Downpour.Entity.Player
 
         public override void Update() {
             if(_psm.EnterJumpState()
-            || _psm.EnterFallState()) {
+            || _psm.EnterFallState()
+            || _psm.EnterSlashState()) {
                 return;
             }
 
@@ -70,14 +74,15 @@ namespace Downpour.Entity.Player
 
         public override void Update() {
             if(_psm.EnterJumpState()
-            || _psm.EnterFallState()) {
+            || _psm.EnterFallState()
+            || _psm.EnterSlashState()) {
                 return;
             }
 
             if(_playerMovementController.MovingDirection == 0) {
                 _psm.ChangeState(_psm.IdleState);
             } else {
-                RunStateRunLogicHandler.SetDesiredVelocity(_playerMovementController, _playerData);
+                RunStateRunLogicHandler.SetDesiredVelocity(_playerMovementController, _playerStatsController);
             }
         }
 
@@ -93,9 +98,9 @@ namespace Downpour.Entity.Player
                 _playerStateMachine = playerStateMachine;
             }
 
-            public void SetDesiredVelocity(PlayerMovementController playerMovementController, PlayerData playerData) {
+            public void SetDesiredVelocity(PlayerMovementController playerMovementController, PlayerStatsController playerStatsController) {
                 _direction.x = playerMovementController.MovingDirection;
-                _desiredVelocity = new Vector2(_direction.x * playerData.CurrentPlayerStats.MoveSpeed, 0f);
+                _desiredVelocity = new Vector2(_direction.x * playerStatsController.CurrentPlayerStats.MoveSpeed, 0f);
             }
 
             public float GetVelocityX() {
@@ -125,14 +130,18 @@ namespace Downpour.Entity.Player
         }
 
         public override void Update() {
-            _psm.RunState.RunStateRunLogicHandler.SetDesiredVelocity(_playerMovementController, _playerData);
+            if(_psm.EnterSlashState()) {
+                return;
+            }
+
+            _psm.RunState.RunStateRunLogicHandler.SetDesiredVelocity(_playerMovementController, _playerStatsController);
         }
 
         public override void FixedUpdate() {
             _velocity = _playerMovementController.rbVelocity;
             _velocity.x = _psm.RunState.RunStateRunLogicHandler.GetVelocityX();
 
-            _velocity.y = JumpStateJumpLogicHandler.HandleJump(_playerMovementController, _playerData).y;
+            _velocity.y = JumpStateJumpLogicHandler.HandleJump(_playerMovementController, _playerStatsController).y;
 
             if(!_playerMovementController.DesiredJump) {
                 _psm.EnterDefaultState();
@@ -140,6 +149,9 @@ namespace Downpour.Entity.Player
 
             _playerMovementController.setVelocity(_velocity);
 
+            if(_playerMovementController.rbVelocityY <= 0) {
+                _psm.ChangeState(_psm.FallState);
+            }
             if(_psm.EnterFallState()) {
                 return;
             }
@@ -153,44 +165,48 @@ namespace Downpour.Entity.Player
             public JumpLogicHandler(PlayerStateMachine playerStateMachine) {
                 _playerStateMachine = playerStateMachine;
             }
-            public Vector2 HandleJump(PlayerMovementController _playerMovementController, PlayerData _playerData) {
-                _velocity = _playerMovementController.rbVelocity;
+            public bool CanJump(PlayerMovementController playerMovementController, PlayerStatsController playerStatsController) {
+                 return (playerMovementController.CoyoteCounter > 0 
+                || (!playerMovementController.UsedDoubleJump && playerStatsController.CurrentPlayerStats.HasDoubleJump && _isJumping)) && (playerMovementController.JumpBufferCounter > 0);
+            }
 
-                if(_playerMovementController.Grounded) {
+            public Vector2 HandleJump(PlayerMovementController playerMovementController, PlayerStatsController playerStatsController) {
+                _velocity = playerMovementController.rbVelocity;
+
+                if(playerMovementController.Grounded) {
                     _isJumping = false;
                 }
 
-                if(_playerMovementController.DesiredJump) {
-                    if(_playerMovementController.JumpBufferCounter > 0) {
-                        _jumpAction(_playerMovementController, _playerData);
+                if(playerMovementController.DesiredJump) {
+                    if(playerMovementController.JumpBufferCounter > 0) {
+                        _jumpAction(playerMovementController, playerStatsController);
                     }
                 } else {
-                    _velocity = new Vector2(_velocity.x, 0.075f);
+                    _velocity = new Vector2(_velocity.x, Mathf.Min(playerMovementController.rbVelocityY, 0.075f));
                 }
 
                 return _velocity;
             }
 
-            private void _jumpAction(PlayerMovementController _playerMovementController, PlayerData _playerData) {
-                if(_playerMovementController.CoyoteCounter > 0 
-                || (!_playerMovementController.UsedDoubleJump && _playerData.CurrentPlayerStats.HasDoubleJump && _isJumping)) {
+            private void _jumpAction(PlayerMovementController playerMovementController, PlayerStatsController playerStatsController) {
+                if(CanJump(playerMovementController, playerStatsController)) {
                     if(_isJumping) {
-                        _playerMovementController.UseDoubleJump();
+                        playerMovementController.UseDoubleJump();
                         Debug.Log("Double Jump");
                     }
 
-                    _playerMovementController.ResetCoyoteTime();
-                    _playerMovementController.ResetJumpBuffer();
+                    playerMovementController.ResetCoyoteTime();
+                    playerMovementController.ResetJumpBuffer();
 
-                    _jumpSpeed = MathF.Sqrt(-2f * Physics2D.gravity.y * _playerData.CurrentPlayerStats.JumpHeight);
+                    _jumpSpeed = MathF.Sqrt(-2f * Physics2D.gravity.y * playerStatsController.CurrentPlayerStats.JumpHeight);
                     _isJumping = true;
 
-                    if(_playerMovementController.rbVelocityY > 0f) {
+                    if(playerMovementController.rbVelocityY > 0f) {
                         _jumpSpeed = Mathf.Max(_jumpSpeed - _velocity.y, 0f);
                     }
                     else if (_velocity.y < 0f)
                     {
-                        _jumpSpeed += Mathf.Abs(_playerMovementController.rbVelocityY);
+                        _jumpSpeed += Mathf.Abs(playerMovementController.rbVelocityY);
                     }
 
                     _velocity.y += _jumpSpeed;
@@ -205,12 +221,9 @@ namespace Downpour.Entity.Player
 
         private float _fallStartPositionY;
 
-        private Vector2 _direction, _desiredVelocity, _velocity;
-        private float _maxSpeedChange, _acceleration;
-
         public override void Enter(State previousState) {
             base.Enter(previousState);
-            // TODO: Reset hitbox, change to idle animation.
+
             _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
             _fallStartPositionY = _playerMovementController.rbPositionY;
         }
@@ -220,29 +233,71 @@ namespace Downpour.Entity.Player
         }
 
         public override void Update() {
-            if(_playerData.CurrentPlayerStats.HasDoubleJump) {
+            if(_playerStatsController.CurrentPlayerStats.HasDoubleJump) {
                 if(_psm.EnterJumpState()) {
                     return;
                 }
             }
+
+            if(_psm.EnterSlashState()) {
+                return;
+            }
             // check sliding wall
 
             // Cap Max Fall Speed
-            _playerMovementController.setVelocity(new Vector2(_playerMovementController.rbVelocityX, Mathf.Min(_playerMovementController.rbVelocityY, _playerData.CurrentPlayerStats.MaxFallSpeed)));
+            _playerMovementController.setVelocity(new Vector2(_playerMovementController.rbVelocityX, Mathf.Min(_playerMovementController.rbVelocityY, _playerStatsController.CurrentPlayerStats.MaxFallSpeed)));
             
             if(_playerMovementController.Grounded) {
                 _psm.EnterDefaultState();
             }
 
-            _psm.RunState.RunStateRunLogicHandler.SetDesiredVelocity(_playerMovementController, _playerData);
+            _psm.RunState.RunStateRunLogicHandler.SetDesiredVelocity(_playerMovementController, _playerStatsController);
         }
 
         public override void FixedUpdate() {
-             _handleHorizontalMovement();
+            _handleHorizontalMovement();
         }
 
         private void _handleHorizontalMovement() {
             _playerMovementController.setVelocity(_psm.RunState.RunStateRunLogicHandler.GetVelocityX(), _playerMovementController.rbVelocityY);
+        }
+    }
+
+    public class PlayerSlashState : PlayerState
+    {
+        public PlayerSlashState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { }
+
+        private PlayerCombatController _playerCombatController;
+    
+        public override void Enter(State previousState)
+        {
+            _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
+
+            _playerCombatController = _player.PlayerCombatController;
+
+            _playerCombatController.FinishSlashEvent += _enterDefaultState;
+            _playerCombatController.StartCoroutine(_playerCombatController.Slash());
+
+            base.Enter(previousState);
+            CanFlip = false;
+            Debug.Log("Enter");
+        }
+
+        public override void PlayStateAnimation() {
+            _playerAnimationController.PlayAnimation(_playerAnimationController.SlashAnimationClip, _playerStatsController.CurrentPlayerStats.SlashSpeed);
+        }
+
+        private void _enterDefaultState() {
+            _psm.EnterDefaultState();
+        }
+
+        public override void Update() {
+            _psm.RunState.RunStateRunLogicHandler.SetDesiredVelocity(_playerMovementController, _playerStatsController);
+        }
+
+        public override void FixedUpdate() {
+            _playerMovementController.setVelocity(_psm.RunState.RunStateRunLogicHandler.GetVelocityX(), _playerMovementController.rbVelocityY);
+            _playerMovementController.setVelocity(_psm.JumpState.JumpStateJumpLogicHandler.HandleJump(_playerMovementController, _playerStatsController));
         }
     }
 }
