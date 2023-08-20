@@ -9,7 +9,9 @@ namespace Downpour.Combat
     {
         [field: SerializeField] public int MaxHealthPoints { get; private set; }
         [field: SerializeField] public bool HealthPointsAreTrueHitAmount { get; private set; }
-        public int CurrentHealthPoints { get; private set; }
+        [field: SerializeField] public int CurrentHealthPoints { get; private set; }
+
+        [field: SerializeField] public bool Invincible { get; private set; }
 
         public event Action DeathEvent;
         public event Action<int> DamageEvent;
@@ -36,8 +38,12 @@ namespace Downpour.Combat
         }
 
         public void TakeDamage(int damage) {
+            if(Invincible) {
+                return;
+            }
+
             CurrentHealthPoints -= HealthPointsAreTrueHitAmount ? 1 : damage;
-            DamageEvent.Invoke(damage);
+            DamageEvent?.Invoke(damage);
             if(CurrentHealthPoints <= 0) {
                 DeathEvent?.Invoke();
             }

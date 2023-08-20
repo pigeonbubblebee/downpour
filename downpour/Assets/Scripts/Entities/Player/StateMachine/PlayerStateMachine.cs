@@ -62,7 +62,7 @@ namespace Downpour.Entity.Player
         }
 
         public bool EnterSlashState() {
-            if(!Player.PlayerCombatController.DesiredSlash) {
+            if(!Player.PlayerCombatController.DesiredSlash || !Player.PlayerCombatController.CanSlash) {
                 return false;
             }
 

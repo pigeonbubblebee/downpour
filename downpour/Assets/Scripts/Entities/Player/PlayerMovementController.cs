@@ -19,12 +19,19 @@ namespace Downpour.Entity.Player {
             RIGHT
         }
 
+        // Vars to keep track of direction.
+        // Head direction is the way the blade will swing.
+        // Facing direction is the direction the player is actually facing
+        // Moving direction is the direction the player is moving. Can be zero if the player is not moving.
         public Direction HeadDirection { get; private set; }
-        [field: SerializeField] public int FacingDirection { get; private set; }
+        public int FacingDirection { get; private set; }
         public int MovingDirection { get; private set; }
-        [SerializeField] private bool _spriteFacingRight = true;
+
+        // Variable to keep track of true direction of the sprite. Used for flipping/
+        private bool _spriteFacingRight = true;
         public bool SpriteFacingRight { get { return _spriteFacingRight; } }
 
+        // Rigidbody with getters
         private Rigidbody2D _rb;
         public float rbVelocityX { get { return _rb.velocity.x; } }
         public float rbVelocityY { get { return _rb.velocity.y; } }
@@ -32,18 +39,22 @@ namespace Downpour.Entity.Player {
         public float rbPositionX { get { return _rb.position.x; } }
         public float rbPositionY { get { return _rb.position.y; } }
 
-        public float CoyoteCounter { get; private set; }
-        public float JumpBufferCounter { get; private set; }
+        // Jump Counters. Keeps track of coyote time and jump buffers.
+        [field: SerializeField] public float CoyoteCounter { get; private set; }
+        [field: SerializeField] public float JumpBufferCounter { get; private set; }
+
+        // Bool to keep track of if the input is desiring a jump.
         public bool DesiredJump { get; private set; }
-        public bool IsJumpReset { get; private set; }
+
+        // Bool to keep track of if the player has released the jump key.
+        private bool _isJumpReset;
         public bool UsedDoubleJump { get; private set; }
 
+        // Grounded bool with a public getter leading to _checkGroundedRequest
         private bool _grounded;
         public bool Grounded { get { return _checkGroundedRequest(); } }
 
-        private PlayerData.ColliderBounds _colliderBoundsSource { get; set; }
-
-        // public InputAction JumpAction => InputReader.Instance.InputActions.Gameplay.Jump;
+        private PlayerData.ColliderBounds _colliderBoundsSource;
 
 
         // Initialization
@@ -97,14 +108,15 @@ namespace Downpour.Entity.Player {
             }
 
             // Check for jumping while actively jumping to handle jump buffering.
-            if(DesiredJump && IsJumpReset) {
-                IsJumpReset = false;
-                // DesiredJump = false;
+            // Is Jump Reset checks for if the player has let go of the jump key and is ready to press it again to trigger a jump (in this case buffered)
+            if(DesiredJump && _isJumpReset) {
+                _isJumpReset = false;
+
                 JumpBufferCounter = _playerStatsController.CurrentPlayerStats.JumpBufferTime;
             } else if(JumpBufferCounter > 0) {
                 JumpBufferCounter -= Time.deltaTime;
             } else if (!DesiredJump) {
-                IsJumpReset = true;
+                _isJumpReset = true;
             }
         }
 
@@ -160,9 +172,6 @@ namespace Downpour.Entity.Player {
         private void _flip() {
             _spriteFacingRight=!_spriteFacingRight;
             FacingDirection *= -1;
-            Vector3 scale = transform.localScale;
-            // scale.x *= -1;
-            transform.localScale = scale;
 
             if((_playerStateMachine.CurrentState as PlayerState).CanFlip)
                 _playerStateMachine.PlayStateAnimation();
@@ -182,15 +191,14 @@ namespace Downpour.Entity.Player {
             _checkCollisions();
         }
 
-        private void _checkCollisions() {
-            _grounded = OverlapBoxOnGround(_colliderBoundsSource.feetRect);
+        public PlayerData.ColliderBounds GetColliderBounds() {
+            return _colliderBoundsSource;
         }
 
-        public Collider2D OverlapBoxOnGround(Rect bounds) {
+        private void _checkCollisions() {
             Vector2 charPosition = transform.position;
-            Vector2 boundsPosition = bounds.position * transform.localScale;
-
-            return Physics2D.OverlapBox(charPosition + boundsPosition, bounds.size, 0, Layers.GroundLayer);
+            Vector2 boundsPosition = _colliderBoundsSource.feetRect.position * transform.localScale;
+            _grounded = Physics2D.OverlapBox(charPosition + boundsPosition, _colliderBoundsSource.feetRect.size, 0, Layers.GroundLayer);
         }
     }
 }

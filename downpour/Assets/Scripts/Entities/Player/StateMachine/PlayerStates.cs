@@ -2,6 +2,7 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Downpour.Combat;
 
 namespace Downpour.Entity.Player
 {
@@ -148,6 +149,7 @@ namespace Downpour.Entity.Player
             }
 
             _playerMovementController.setVelocity(_velocity);
+            _playerMovementController.ResetCoyoteTime();
 
             if(_playerMovementController.rbVelocityY <= 0) {
                 _psm.ChangeState(_psm.FallState);
@@ -178,9 +180,7 @@ namespace Downpour.Entity.Player
                 }
 
                 if(playerMovementController.DesiredJump) {
-                    if(playerMovementController.JumpBufferCounter > 0) {
-                        _jumpAction(playerMovementController, playerStatsController);
-                    }
+                    _jumpAction(playerMovementController, playerStatsController);
                 } else {
                     _velocity = new Vector2(_velocity.x, Mathf.Min(playerMovementController.rbVelocityY, 0.075f));
                 }
@@ -195,7 +195,6 @@ namespace Downpour.Entity.Player
                         Debug.Log("Double Jump");
                     }
 
-                    playerMovementController.ResetCoyoteTime();
                     playerMovementController.ResetJumpBuffer();
 
                     _jumpSpeed = MathF.Sqrt(-2f * Physics2D.gravity.y * playerStatsController.CurrentPlayerStats.JumpHeight);
@@ -233,10 +232,8 @@ namespace Downpour.Entity.Player
         }
 
         public override void Update() {
-            if(_playerStatsController.CurrentPlayerStats.HasDoubleJump) {
-                if(_psm.EnterJumpState()) {
-                    return;
-                }
+            if(_psm.EnterJumpState()) {
+                return;
             }
 
             if(_psm.EnterSlashState()) {
@@ -268,6 +265,10 @@ namespace Downpour.Entity.Player
         public PlayerSlashState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { }
 
         private PlayerCombatController _playerCombatController;
+
+        private float _knockbackCounter;
+        private bool _knockback;
+        private int _knockbackDirection;
     
         public override void Enter(State previousState)
         {
@@ -276,28 +277,54 @@ namespace Downpour.Entity.Player
             _playerCombatController = _player.PlayerCombatController;
 
             _playerCombatController.FinishSlashEvent += _enterDefaultState;
-            _playerCombatController.StartCoroutine(_playerCombatController.Slash());
+            _playerCombatController.HitEvent += _triggerKnockback;
 
-            base.Enter(previousState);
             CanFlip = false;
-            Debug.Log("Enter");
+            
+            _playerCombatController.StartCoroutine(_playerCombatController.Slash());
+            base.Enter(previousState);
         }
 
         public override void PlayStateAnimation() {
-            _playerAnimationController.PlayAnimation(_playerAnimationController.SlashAnimationClip, _playerStatsController.CurrentPlayerStats.SlashSpeed);
+            switch(_playerCombatController.CurrentSlashComboAttack) {
+                case 0:
+                    _playerAnimationController.PlayAnimation(_playerAnimationController.SlashAnimationClip, _playerStatsController.CurrentPlayerStats.SlashSpeed);
+                    break;
+                case 1:
+                    _playerAnimationController.PlayAnimation(_playerAnimationController.Slash2AnimationClip, _playerStatsController.CurrentPlayerStats.SlashSpeed);
+                    break;
+            }
         }
 
         private void _enterDefaultState() {
             _psm.EnterDefaultState();
         }
 
+        private void _triggerKnockback(IHittable hittable, int damage, int direction) {
+            _knockbackDirection = direction;
+            _knockbackCounter = _playerStatsController.CurrentPlayerStats.SlashKnockbackTime;
+        }
+
         public override void Update() {
             _psm.RunState.RunStateRunLogicHandler.SetDesiredVelocity(_playerMovementController, _playerStatsController);
+
+            if(_knockbackCounter > 0) {
+                _knockbackCounter -= Time.deltaTime;
+                _knockback = true;
+            } else {
+                _knockback = false;
+            }
         }
 
         public override void FixedUpdate() {
             _playerMovementController.setVelocity(_psm.RunState.RunStateRunLogicHandler.GetVelocityX(), _playerMovementController.rbVelocityY);
+
             _playerMovementController.setVelocity(_psm.JumpState.JumpStateJumpLogicHandler.HandleJump(_playerMovementController, _playerStatsController));
+            _playerMovementController.ResetCoyoteTime();
+
+            if(_knockback) {
+                _playerMovementController.setVelocity(_knockbackDirection * _playerStatsController.CurrentPlayerStats.SlashKnockbackMultiplier, _playerMovementController.rbVelocityY);
+            }
         }
     }
 }

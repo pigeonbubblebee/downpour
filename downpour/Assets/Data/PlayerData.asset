@@ -26,22 +26,45 @@ MonoBehaviour:
       y: -0.858
       width: 0.63
       height: 0.15
-    handRect:
+    slashRightRect:
       serializedVersion: 2
-      x: 0.266
+      x: 0.85
+      y: 0
+      width: 1.75
+      height: 1.5
+    slashLeftRect:
+      serializedVersion: 2
+      x: -0.85
+      y: 0
+      width: 1.75
+      height: 1.5
+    handRightRect:
+      serializedVersion: 2
+      x: 0.3
       y: -0.1
-      width: 0.1
+      width: 0.15
+      height: 1.6
+    handLeftRect:
+      serializedVersion: 2
+      x: -0.3
+      y: -0.1
+      width: 0.15
       height: 1.6
   <BasePlayerStats>k__BackingField:
-    <MaxHealth>k__BackingField: 0
-    <MaxSpirit>k__BackingField: 0
+    <MaxHealth>k__BackingField: 100
+    <MaxSpirit>k__BackingField: 99
     <MoveSpeed>k__BackingField: 5
     <JumpHeight>k__BackingField: 4
     <MaxFallSpeed>k__BackingField: 40
-    <CoyoteTime>k__BackingField: 0.3
+    <CoyoteTime>k__BackingField: 0.2
     <JumpBufferTime>k__BackingField: 0.3
     HasDoubleJump: 0
-    <SlashDamage>k__BackingField: 4
-    <SlashSpeed>k__BackingField: 0.25
-    <SlashCooldown>k__BackingField: 1
+    <SlashLevel>k__BackingField: 0
+    <BaseSlashDamageValues>k__BackingField: 04000000090000000d0000001100000015000000
+    <SlashSpeed>k__BackingField: 0.175
+    <SlashCooldown>k__BackingField: 0.275
     <SlashRange>k__BackingField: 1
+    <ComboTime>k__BackingField: 0.5
+    <SlashBufferTime>k__BackingField: 0.25
+    <SlashKnockbackMultiplier>k__BackingField: 3
+    <SlashKnockbackTime>k__BackingField: 0.1

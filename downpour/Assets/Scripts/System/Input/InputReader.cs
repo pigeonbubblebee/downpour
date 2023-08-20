@@ -59,7 +59,7 @@ namespace Downpour.Input {
 
         // Handle Inputs:
         void InputActions.IGameplayActions.OnSlash(InputAction.CallbackContext context) {
-            SlashEvent?.Invoke(context.phase == InputActionPhase.Canceled ? false : true);
+            SlashEvent?.Invoke(context.phase == InputActionPhase.Performed ? true : false);
         }
     }
 }

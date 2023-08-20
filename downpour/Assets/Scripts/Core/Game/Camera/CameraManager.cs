@@ -8,13 +8,17 @@ namespace Downpour
 {
     public class CameraManager : SingletonPersistent<CameraManager>
     {
-        public Camera MainCamera => Camera.main;
+        public Camera MainCamera;
+        public CameraShaker CameraShaker;
         public CinemachineVirtualCamera VCamera { get; private set; }
         public CinemachineConfiner2D VCameraConfines { get; private set; }
 
         protected override void Awake() {
             base.Awake();
+            MainCamera = Camera.main;
+            
             VCamera = GetComponentInChildren<CinemachineVirtualCamera>();
+            CameraShaker = GetComponentInChildren<CameraShaker>();
             VCameraConfines = GetComponentInChildren<CinemachineConfiner2D>();
         }
 

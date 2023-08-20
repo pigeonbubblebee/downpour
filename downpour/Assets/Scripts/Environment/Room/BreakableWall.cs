@@ -17,8 +17,12 @@ namespace Downpour
             _healthSystem = GetComponent<HealthSystem>();
         }
 
-        public void OnHit(Player player, int damage) {
+        public void OnHit(Player player, int damage, int direction) {
             return; // TODO: implement taking damage
+        }
+
+        public Vector2 GetSlashEffectPosition() {
+            return transform.position; // TODO: implement taking damage
         }
     }
 }

@@ -15,7 +15,10 @@ namespace Downpour.Entity.Player
         public class ColliderBounds {
             public Rect bounds;
             public Rect feetRect;
-            public Rect handRect;
+            public Rect slashRightRect;
+            public Rect slashLeftRect;
+            public Rect handRightRect;
+            public Rect handLeftRect;
         }
 
         [field: SerializeField] public ColliderBounds StandColliderBounds { get; private set; }
@@ -31,14 +34,21 @@ namespace Downpour.Entity.Player
 
             [field: SerializeField, Range(0f, 10f)] public float JumpHeight { get; private set; }
             [field: SerializeField, Range(0f, 100f)] public float MaxFallSpeed { get; private set; }
-            [field: SerializeField, Range(0f, 0.3f)] public float CoyoteTime { get; private set; }
-            [field: SerializeField, Range(0f, 0.3f)] public float JumpBufferTime { get; private set; }
+            [field: SerializeField, Range(0f, 1f)] public float CoyoteTime { get; private set; }
+            [field: SerializeField, Range(0f, 0.5f)] public float JumpBufferTime { get; private set; }
             [field: SerializeField] public bool HasDoubleJump;
 
-            [field: SerializeField] public int SlashDamage { get; private set; }
+            public int SlashDamage => BaseSlashDamageValues[SlashLevel];
+            [field: SerializeField, Range(0, 4)] public int SlashLevel { get; private set; }
+            [field: SerializeField] public int[] BaseSlashDamageValues { get; private set; }
             [field: SerializeField] public float SlashSpeed { get; private set; }
             [field: SerializeField] public float SlashCooldown { get; private set; }
             [field: SerializeField] public float SlashRange { get; private set; }
+            [field: SerializeField] public float ComboTime { get; private set; }
+            [field: SerializeField] public float SlashBufferTime { get; private set; }
+
+            [field: SerializeField] public float SlashKnockbackMultiplier { get; private set; }
+            [field: SerializeField] public float SlashKnockbackTime { get; private set; }
         }
     }
 }

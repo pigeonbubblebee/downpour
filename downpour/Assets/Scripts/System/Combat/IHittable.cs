@@ -7,6 +7,8 @@ namespace Downpour.Combat
 {
     public interface IHittable
     {
-        void OnHit(Player player, int damage);
+        void OnHit(Player player, int damage, int direction);
+
+        Vector2 GetSlashEffectPosition();
     }
 }
