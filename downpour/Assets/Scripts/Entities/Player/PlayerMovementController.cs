@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 using UnityEngine.InputSystem;
 using Downpour.Input;
 
@@ -56,6 +57,16 @@ namespace Downpour.Entity.Player {
 
         private PlayerData.ColliderBounds _colliderBoundsSource;
 
+        public bool DesiredDash { get; private set; }
+        public float DashCooldownCounter { get; private set; }
+        public bool CanDash { get; private set; }
+
+        public float DashBufferCounter { get; private set; }
+        private bool _dashBuffered;
+
+        public event Action<float> DashEvent;
+        public event Action FinishDashEvent;
+
 
         // Initialization
         protected override void Awake() {
@@ -70,6 +81,7 @@ namespace Downpour.Entity.Player {
             if(this.enabled) {
                 _inputReader.MovementEvent += _handleMovementInput;
                 _inputReader.JumpEvent += _handleJumpInput;
+                _inputReader.DashEvent += _handleDashInput;
             }
 
             FacingDirection = 1;
@@ -79,6 +91,25 @@ namespace Downpour.Entity.Player {
             _checkCollisions();
 
             _handleJumpData();
+        }
+
+        private void Update() {
+            if(DashBufferCounter > 0) {
+                DashBufferCounter -= Time.deltaTime;
+            } else {
+                _dashBuffered = false;
+            }
+
+            if(DashCooldownCounter > 0) {
+                CanDash = false;
+                DashCooldownCounter -= Time.deltaTime;
+            } else {
+                CanDash = true;
+            }
+
+            if(!((_playerStateMachine.CurrentState is PlayerSlashState) || (_playerStateMachine.CurrentState is PlayerParryState) || (_playerStateMachine.CurrentState is PlayerDashState)) && _dashBuffered) {
+                DesiredDash = true;
+            }
         }
 
         // <summary>
@@ -170,11 +201,14 @@ namespace Downpour.Entity.Player {
         // Flips sprite.
         // <summary/>
         private void _flip() {
+            if(!(_playerStateMachine.CurrentState as PlayerState).CanFlip) {
+                return;
+            }
             _spriteFacingRight=!_spriteFacingRight;
             FacingDirection *= -1;
 
-            if((_playerStateMachine.CurrentState as PlayerState).CanFlip)
-                _playerStateMachine.PlayStateAnimation();
+            
+            _playerStateMachine.PlayStateAnimation();
         }
 
         // Colliders
@@ -199,6 +233,31 @@ namespace Downpour.Entity.Player {
             Vector2 charPosition = transform.position;
             Vector2 boundsPosition = _colliderBoundsSource.feetRect.position * transform.localScale;
             _grounded = Physics2D.OverlapBox(charPosition + boundsPosition, _colliderBoundsSource.feetRect.size, 0, Layers.GroundLayer);
+        }
+
+        private void _handleDashInput(bool startingDash) {
+            if((_playerStateMachine.CurrentState is PlayerSlashState || _playerStateMachine.CurrentState is PlayerParryState || _playerStateMachine.CurrentState is PlayerDashState) &&  !_dashBuffered && startingDash) {
+                _dashBuffered = true;
+                DashBufferCounter = _playerStatsController.CurrentPlayerStats.DashBufferTime;
+            }
+            DesiredDash = startingDash;
+        }
+
+        public IEnumerator Dash() {
+            DashEvent?.Invoke(_playerStatsController.CurrentPlayerStats.DashSpeed);
+            
+            _dashBuffered = false;
+
+            DashCooldownCounter = _playerStatsController.CurrentPlayerStats.DashCooldown;
+            CanDash = false;
+
+            _playerStatsController.StartInvincibilityFrames(_playerStatsController.CurrentPlayerStats.DashLength);
+            
+            yield return new WaitForSeconds(_playerStatsController.CurrentPlayerStats.DashLength);
+
+            FinishDashEvent?.Invoke();
+
+            DesiredDash = false;
         }
     }
 }

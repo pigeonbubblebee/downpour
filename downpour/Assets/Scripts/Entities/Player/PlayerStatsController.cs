@@ -17,6 +17,8 @@ namespace Downpour.Entity.Player
         public event Action<int> PlayerDamagedEvent;
         public event Action PlayerDeathEvent;
 
+        private float _iFrameTime;
+
         protected override void Awake() {
             base.Awake();
             
@@ -28,6 +30,15 @@ namespace Downpour.Entity.Player
 
             _healthSystem.DeathEvent += _invokeDeathEvent;
             _healthSystem.DamageEvent += _invokeDamageEvent;
+        }
+
+        private void Update() {
+            if(_iFrameTime > 0) {
+                _iFrameTime -= Time.deltaTime;
+                _healthSystem.SetInvincible(true);
+            } else {
+                _healthSystem.SetInvincible(false);
+            }
         }
 
         private void _invokeDeathEvent() {
@@ -42,6 +53,10 @@ namespace Downpour.Entity.Player
             m_currentPlayerStats = _playerData.BasePlayerStats;
             // TODO: Update based on beads, buffs/debuffs
             return m_currentPlayerStats;
+        }
+
+        public void StartInvincibilityFrames(float iframeTime) {
+            _iFrameTime = Mathf.Max(_iFrameTime, iframeTime);
         }
 
         private void _updatePermanentBuffs() {

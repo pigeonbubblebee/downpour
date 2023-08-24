@@ -49,6 +49,16 @@ namespace Downpour.Entity.Player
 
             [field: SerializeField] public float SlashKnockbackMultiplier { get; private set; }
             [field: SerializeField] public float SlashKnockbackTime { get; private set; }
+
+            [field: SerializeField] public float ParryCooldown { get; private set; }
+            [field: SerializeField] public float ParryWindow { get; private set; }
+            [field: SerializeField] public float ParrySpeed { get; private set; }
+            [field: SerializeField] public float ParryBufferTime { get; private set; }
+
+            [field: SerializeField] public float DashCooldown { get; private set; }
+            [field: SerializeField] public float DashSpeed { get; private set; }
+            [field: SerializeField] public float DashLength { get; private set; }
+            [field: SerializeField] public float DashBufferTime { get; private set; }
         }
     }
 }

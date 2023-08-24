@@ -11,10 +11,14 @@ namespace Downpour.Entity.Player
     {
         private InputReader _inputReader;
         public bool DesiredSlash { get; private set; }
+        public bool DesiredParry { get; private set; }
 
         public event Action<int, float, float> SlashEvent;
         public event Action<IHittable, int, int> HitEvent;
         public event Action FinishSlashEvent;
+
+        public event Action<float> ParryEvent;
+        public event Action FinishParryEvent;
 
         public int CurrentSlashComboAttack { get; private set; }
         public float SlashComboCounter { get; private set; }
@@ -32,6 +36,12 @@ namespace Downpour.Entity.Player
         [SerializeField] private float _slashHitEffectShakeDuration;
         [SerializeField] private float _slashHitEffectShakeMagnitude;
 
+        public float ParryCooldownCounter { get; private set; }
+        public bool CanParry { get; private set; }
+
+        public float ParryBufferCounter { get; private set; }
+        private bool _parryBuffered;
+
         private void Start() {
             
             CurrentSlashComboAttack = 0;
@@ -41,6 +51,7 @@ namespace Downpour.Entity.Player
 
             if(this.enabled) {
                 _inputReader.SlashEvent += _handleSlashInput;
+                _inputReader.ParryEvent += _handleParryInput;
             }
         }
         
@@ -55,6 +66,12 @@ namespace Downpour.Entity.Player
                 _slashBuffered = false;
             }
 
+            if(ParryBufferCounter > 0) {
+                ParryBufferCounter -= Time.deltaTime;
+            } else {
+                _parryBuffered = false;
+            }
+
             if(SlashCooldownCounter > 0) {
                 CanSlash = false;
                 SlashCooldownCounter -= Time.deltaTime;
@@ -62,8 +79,19 @@ namespace Downpour.Entity.Player
                 CanSlash = true;
             }
 
-            if(!(_playerStateMachine.CurrentState is PlayerSlashState) && _slashBuffered) {
+            if(ParryCooldownCounter > 0) {
+                CanParry = false;
+                ParryCooldownCounter -= Time.deltaTime;
+            } else {
+                CanParry = true;
+            }
+
+            if(!((_playerStateMachine.CurrentState is PlayerSlashState) || (_playerStateMachine.CurrentState is PlayerParryState)) && _slashBuffered) {
                 DesiredSlash = true;
+            }
+
+            if(!((_playerStateMachine.CurrentState is PlayerSlashState) || (_playerStateMachine.CurrentState is PlayerParryState)) && _parryBuffered) {
+                DesiredParry = true;
             }
         }
 
@@ -73,6 +101,14 @@ namespace Downpour.Entity.Player
                 SlashBufferCounter = _playerStatsController.CurrentPlayerStats.SlashBufferTime;
             }
             DesiredSlash = startingSlash;
+        }
+
+        private void _handleParryInput(bool startingParry) {
+            if((_playerStateMachine.CurrentState is PlayerSlashState || _playerStateMachine.CurrentState is PlayerParryState) &&  !_parryBuffered && startingParry) {
+                _parryBuffered = true;
+                ParryBufferCounter = _playerStatsController.CurrentPlayerStats.ParryBufferTime;
+            }
+            DesiredParry = startingParry;
         }
 
         public IEnumerator Slash() {
@@ -130,16 +166,6 @@ namespace Downpour.Entity.Player
 
         private void _onHit(IHittable hittable, int damage, int direction) {
             hittable.OnHit(this.Player, damage, -direction);
-            
-            // GameObject hitEffect = Instantiate(_slashHitPrefab, hittable.GetSlashEffectPosition(), Quaternion.identity);
-
-            // if(CurrentSlashComboAttack == 1) {
-            //         Vector3 scale = hitEffect.transform.localScale;
-            //         scale.y *= -1;
-            //         hitEffect.transform.localScale = scale;
-            // }
-
-            // Destroy(hitEffect, _slashHitEffectTime);
 
             _emitSlashParticle(hittable.GetSlashEffectPosition());
 
@@ -153,7 +179,6 @@ namespace Downpour.Entity.Player
             emitParams.startSize = 2.5f;
             emitParams.startLifetime = 0.25f;
             emitParams.velocity = new Vector3(0f, 0f, 0f);
-            //emitParams.position = position;
             
             emitParams.position = new Vector3(position.x, position.y, 0f);
 
@@ -165,12 +190,24 @@ namespace Downpour.Entity.Player
                 emitParams.rotation += (_playerMovementController.FacingDirection == 1) ? 75f : -75f;
             }
 
-            // Debug.Log(emitParams.position.y);
-            // Debug.Log(position.y);
-
             emitParams.applyShapeToPosition = true;
 
             _slashHitParticle.Emit(emitParams, 1);
+        }
+
+        public IEnumerator Parry() {
+            ParryEvent?.Invoke(_playerStatsController.CurrentPlayerStats.ParryWindow);
+            
+            _parryBuffered = false;
+
+            ParryCooldownCounter = _playerStatsController.CurrentPlayerStats.ParryCooldown;
+            CanParry = false;
+            
+            yield return new WaitForSeconds(_playerStatsController.CurrentPlayerStats.ParrySpeed);
+
+            FinishParryEvent?.Invoke();
+
+            DesiredParry = false;
         }
     }
 }

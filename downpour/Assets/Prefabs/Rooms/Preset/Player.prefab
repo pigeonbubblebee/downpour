@@ -306,6 +306,12 @@ MonoBehaviour:
   <Slash2AnimationClip>k__BackingField:
     <RightClip>k__BackingField: Slash2Right
     <LeftClip>k__BackingField: Slash2Left
+  <ParryAnimationClip>k__BackingField:
+    <RightClip>k__BackingField: ParryRight
+    <LeftClip>k__BackingField: ParryLeft
+  <DashAnimationClip>k__BackingField:
+    <RightClip>k__BackingField: DashRight
+    <LeftClip>k__BackingField: DashLeft
 --- !u!114 &8582994930062142451
 MonoBehaviour:
   m_ObjectHideFlags: 0

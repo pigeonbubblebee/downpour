@@ -16,6 +16,8 @@ namespace Downpour.Input {
         public event Action<float, float, bool> MovementEvent;
         public event Action<bool> JumpEvent;
         public event Action<bool> SlashEvent;
+        public event Action<bool> ParryEvent;
+        public event Action<bool> DashEvent;
 
         // Initialization
         protected override void Awake() {
@@ -60,6 +62,16 @@ namespace Downpour.Input {
         // Handle Inputs:
         void InputActions.IGameplayActions.OnSlash(InputAction.CallbackContext context) {
             SlashEvent?.Invoke(context.phase == InputActionPhase.Performed ? true : false);
+        }
+
+        // Handle Inputs:
+        void InputActions.IGameplayActions.OnParry(InputAction.CallbackContext context) {
+            ParryEvent?.Invoke(context.phase == InputActionPhase.Performed ? true : false);
+        }
+
+        // Handle Inputs:
+        void InputActions.IGameplayActions.OnDash(InputAction.CallbackContext context) {
+            DashEvent?.Invoke(context.phase == InputActionPhase.Performed ? true : false);
         }
     }
 }

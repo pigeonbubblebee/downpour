@@ -43,9 +43,11 @@ namespace Downpour.Entity.Player
         }
 
         public override void Update() {
-            if(_psm.EnterJumpState()
+            if(_psm.EnterDashState()
+            || _psm.EnterJumpState()
             || _psm.EnterFallState()
-            || _psm.EnterSlashState()) {
+            || _psm.EnterSlashState()
+            || _psm.EnterParryState()) {
                 return;
             }
 
@@ -74,9 +76,11 @@ namespace Downpour.Entity.Player
         }
 
         public override void Update() {
-            if(_psm.EnterJumpState()
+            if(_psm.EnterDashState()
+            || _psm.EnterJumpState()
             || _psm.EnterFallState()
-            || _psm.EnterSlashState()) {
+            || _psm.EnterSlashState()
+            || _psm.EnterParryState()) {
                 return;
             }
 
@@ -325,6 +329,72 @@ namespace Downpour.Entity.Player
             if(_knockback) {
                 _playerMovementController.setVelocity(_knockbackDirection * _playerStatsController.CurrentPlayerStats.SlashKnockbackMultiplier, _playerMovementController.rbVelocityY);
             }
+        }
+    }
+
+    public class PlayerParryState : PlayerState
+    {
+        public PlayerParryState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { }
+
+        private PlayerCombatController _playerCombatController;
+
+        public override void PlayStateAnimation() {
+            _playerAnimationController.PlayAnimation(_playerAnimationController.ParryAnimationClip);
+        }
+
+        public override void Enter(State previousState)
+        {
+            _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
+
+            _playerCombatController = _player.PlayerCombatController;
+
+            _playerCombatController.FinishParryEvent += _enterDefaultState;
+
+            _playerMovementController.setVelocity(new Vector2(0f, _playerMovementController.rbVelocityY));
+            // _playerCombatController.HitEvent += _triggerKnockback;
+
+            CanFlip = false;
+            
+            _playerCombatController.StartCoroutine(_playerCombatController.Parry());
+            base.Enter(previousState);
+        }
+
+        private void _enterDefaultState() {
+            _psm.EnterDefaultState();
+        }
+    }
+
+    public class PlayerDashState : PlayerState
+    {
+        public PlayerDashState(PlayerStateMachine playerStateMachine) : base(playerStateMachine) { }
+
+        public override void PlayStateAnimation() {
+            _playerAnimationController.PlayAnimation(_playerAnimationController.DashAnimationClip);
+        }
+
+        public override void Enter(State previousState)
+        {
+            _playerMovementController.SetColliderBounds(_player.PlayerData.StandColliderBounds);
+
+            _playerMovementController.FinishDashEvent += _enterDefaultState;
+
+            // _playerMovementController.setVelocity(new Vector2(0f, _playerMovementController.rbVelocityY > 0 ? 0.075f : 0f));
+
+            CanFlip = false;
+            
+            _playerMovementController.StartCoroutine(_playerMovementController.Dash());
+            base.Enter(previousState);
+        }
+
+        public override void FixedUpdate() {
+            float direction = _playerMovementController.FacingDirection;
+            Vector2 velocity = new Vector2(direction * _playerStatsController.CurrentPlayerStats.DashSpeed, _playerMovementController.rbVelocityY);
+
+            _playerMovementController.setVelocity(velocity);
+        }
+
+        private void _enterDefaultState() {
+            _psm.EnterDefaultState();
         }
     }
 }

@@ -48,5 +48,9 @@ namespace Downpour.Combat
                 DeathEvent?.Invoke();
             }
         }
+
+        public void SetInvincible(bool invincible) {
+            Invincible = invincible;
+        }
     }
 }

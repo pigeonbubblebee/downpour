@@ -68,3 +68,11 @@ MonoBehaviour:
     <SlashBufferTime>k__BackingField: 0.25
     <SlashKnockbackMultiplier>k__BackingField: 3
     <SlashKnockbackTime>k__BackingField: 0.1
+    <ParryCooldown>k__BackingField: 1
+    <ParryWindow>k__BackingField: 0.25
+    <ParrySpeed>k__BackingField: 0.75
+    <ParryBufferTime>k__BackingField: 0.75
+    <DashCooldown>k__BackingField: 0.35
+    <DashSpeed>k__BackingField: 15
+    <DashLength>k__BackingField: 0.15
+    <DashBufferTime>k__BackingField: 0.15

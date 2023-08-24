@@ -13,6 +13,8 @@ namespace Downpour.Entity.Player
         public PlayerJumpState JumpState { get; private set; }
         public PlayerFallState FallState { get; private set; }
         public PlayerSlashState SlashState { get; private set; }
+        public PlayerParryState ParryState { get; private set; }
+        public PlayerDashState DashState { get; private set; }
 
         public Player Player { get; private set; }
 
@@ -22,6 +24,8 @@ namespace Downpour.Entity.Player
             JumpState = new PlayerJumpState(this);
             FallState = new PlayerFallState(this);
             SlashState = new PlayerSlashState(this);
+            ParryState = new PlayerParryState(this);
+            DashState = new PlayerDashState(this);
 
             Player = GetComponent<Player>();
         }
@@ -67,6 +71,24 @@ namespace Downpour.Entity.Player
             }
 
             ChangeState(SlashState);
+            return true;
+        }
+
+        public bool EnterParryState() {
+            if(!Player.PlayerCombatController.DesiredParry || !Player.PlayerCombatController.CanParry) {
+                return false;
+            }
+
+            ChangeState(ParryState);
+            return true;
+        }
+
+        public bool EnterDashState() {
+            if(!Player.PlayerMovementController.DesiredDash || !Player.PlayerMovementController.CanDash) {
+                return false;
+            }
+
+            ChangeState(DashState);
             return true;
         }
     }

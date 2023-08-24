@@ -55,6 +55,24 @@ namespace Downpour.Input
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Parry"",
+                    ""type"": ""Button"",
+                    ""id"": ""2495678c-9adc-43a9-a367-102f82f59dd8"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Dash"",
+                    ""type"": ""Button"",
+                    ""id"": ""d8d9eac8-336f-449b-8505-0586245d7051"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -134,6 +152,28 @@ namespace Downpour.Input
                     ""action"": ""Slash"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""234f4352-72f6-46d5-a984-037010466f80"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Parry"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""66af39a2-95b3-4670-9a52-227c40b9ea90"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Dash"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -145,6 +185,8 @@ namespace Downpour.Input
             m_Gameplay_Movement = m_Gameplay.FindAction("Movement", throwIfNotFound: true);
             m_Gameplay_Jump = m_Gameplay.FindAction("Jump", throwIfNotFound: true);
             m_Gameplay_Slash = m_Gameplay.FindAction("Slash", throwIfNotFound: true);
+            m_Gameplay_Parry = m_Gameplay.FindAction("Parry", throwIfNotFound: true);
+            m_Gameplay_Dash = m_Gameplay.FindAction("Dash", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -209,6 +251,8 @@ namespace Downpour.Input
         private readonly InputAction m_Gameplay_Movement;
         private readonly InputAction m_Gameplay_Jump;
         private readonly InputAction m_Gameplay_Slash;
+        private readonly InputAction m_Gameplay_Parry;
+        private readonly InputAction m_Gameplay_Dash;
         public struct GameplayActions
         {
             private @InputActions m_Wrapper;
@@ -216,6 +260,8 @@ namespace Downpour.Input
             public InputAction @Movement => m_Wrapper.m_Gameplay_Movement;
             public InputAction @Jump => m_Wrapper.m_Gameplay_Jump;
             public InputAction @Slash => m_Wrapper.m_Gameplay_Slash;
+            public InputAction @Parry => m_Wrapper.m_Gameplay_Parry;
+            public InputAction @Dash => m_Wrapper.m_Gameplay_Dash;
             public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -234,6 +280,12 @@ namespace Downpour.Input
                 @Slash.started += instance.OnSlash;
                 @Slash.performed += instance.OnSlash;
                 @Slash.canceled += instance.OnSlash;
+                @Parry.started += instance.OnParry;
+                @Parry.performed += instance.OnParry;
+                @Parry.canceled += instance.OnParry;
+                @Dash.started += instance.OnDash;
+                @Dash.performed += instance.OnDash;
+                @Dash.canceled += instance.OnDash;
             }
 
             private void UnregisterCallbacks(IGameplayActions instance)
@@ -247,6 +299,12 @@ namespace Downpour.Input
                 @Slash.started -= instance.OnSlash;
                 @Slash.performed -= instance.OnSlash;
                 @Slash.canceled -= instance.OnSlash;
+                @Parry.started -= instance.OnParry;
+                @Parry.performed -= instance.OnParry;
+                @Parry.canceled -= instance.OnParry;
+                @Dash.started -= instance.OnDash;
+                @Dash.performed -= instance.OnDash;
+                @Dash.canceled -= instance.OnDash;
             }
 
             public void RemoveCallbacks(IGameplayActions instance)
@@ -269,6 +327,8 @@ namespace Downpour.Input
             void OnMovement(InputAction.CallbackContext context);
             void OnJump(InputAction.CallbackContext context);
             void OnSlash(InputAction.CallbackContext context);
+            void OnParry(InputAction.CallbackContext context);
+            void OnDash(InputAction.CallbackContext context);
         }
     }
 }
